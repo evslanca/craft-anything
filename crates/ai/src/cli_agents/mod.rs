@@ -310,6 +310,9 @@ fn standalone(program: &str) -> Process {
 pub struct StreamParser {
     adapter: Arc<dyn AgentAdapter>,
     pub session_id: Option<String>,
+    /// The session this run was asked to continue. Codex can silently start a new thread when it
+    /// cannot find the requested one, so its adapter compares the first thread id with this.
+    expected_session_id: Option<String>,
     pub tool_names: HashMap<String, String>,
     pub input_tokens: u64,
     pub output_tokens: u64,
@@ -356,9 +359,14 @@ fn summary_of(s: &str) -> String {
 impl StreamParser {
     /// A parser for one run, reading lines the way `adapter` says.
     pub fn new(adapter: Arc<dyn AgentAdapter>) -> Self {
+        Self::for_run(adapter, None)
+    }
+
+    fn for_run(adapter: Arc<dyn AgentAdapter>, expected_session_id: Option<String>) -> Self {
         StreamParser {
             adapter,
             session_id: None,
+            expected_session_id,
             tool_names: HashMap::new(),
             input_tokens: 0,
             output_tokens: 0,
@@ -799,10 +807,12 @@ fn run_cli(spec: &CliSpec, text: &str, retry: bool, tx: &Sender<AgentEvent>, sto
     };
     let _ =
         tx.send(AgentEvent::Status { text: format!("Asking {}{}…", display_for(&agent), remote.as_ref().map(|h| format!(" on {h}")).unwrap_or_default()) });
-    let parser = Arc::new(Mutex::new(StreamParser::new(adapter.clone())));
+    let expected_session_id = if adapter.resumes() { resume.clone() } else { None };
+    let parser = Arc::new(Mutex::new(StreamParser::for_run(adapter.clone(), expected_session_id)));
     let (p2, tx2, tx_err, lost2, failure2) = (parser.clone(), tx.clone(), tx.clone(), lost.clone(), failure.clone());
     let failed_tools = Arc::new(AtomicBool::new(false));
     let (failed_tools2, failed_tools3) = (failed_tools.clone(), failed_tools.clone());
+    let lost_process = lost.clone();
     let stop2 = stop.clone();
     let mut proc = (if remote.is_none() { adapter.process(&prog) } else { Process::new(&prog) })
         .args(&argv)
@@ -813,7 +823,7 @@ fn run_cli(spec: &CliSpec, text: &str, retry: bool, tx: &Sender<AgentEvent>, sto
     }
     let mut proc = proc
         .stdout_cap(4 * 1024 * 1024)
-        .cancel_when(move || stop2.is_stopped() || failed_tools2.load(Ordering::SeqCst))
+        .cancel_when(move || stop2.is_stopped() || failed_tools2.load(Ordering::SeqCst) || lost_process.load(Ordering::SeqCst))
         .on_stdout_line(move |l| {
             if failed_tools3.load(Ordering::SeqCst) {
                 return;
@@ -886,6 +896,7 @@ fn run_cli(spec: &CliSpec, text: &str, retry: bool, tx: &Sender<AgentEvent>, sto
             }
         }
         Ok(_) => {}
+        Err(e) if e.code == craft_anything_evidence::ErrorCode::Cancelled && p.session_missing => {}
         Err(e) if e.code == craft_anything_evidence::ErrorCode::Cancelled => {
             let _ = tx.send(AgentEvent::Status { text: "Stopped.".into() });
         }
@@ -2227,7 +2238,7 @@ echo '{"type":"turn.completed","usage":{"input_tokens":1,"output_tokens":1}}'
         assert!(matches!(p.line(r#"{"say":"hello"}"#).as_slice(), [AgentEvent::TextDelta { text }] if text == "hello"));
         // Unknown agents stream their output as text; the built-ins keep their own adapters.
         assert!(!reg.for_agent("aider").streams_json());
-        assert!(reg.for_agent("claude").resumes() && !reg.for_agent("codex").resumes() && reg.for_agent("antigravity").resumes());
+        assert!(reg.for_agent("claude").resumes() && reg.for_agent("codex").resumes() && reg.for_agent("antigravity").resumes());
         // Registering an adapter for an existing id replaces that one.
         reg.register(Arc::new(EchoAgent));
         assert_eq!(format!("{reg:?}"), r#"["claude-code", "codex", "gemini-cli", "opencode", "antigravity", "hermes", "maki", "copilot", "echo-agent"]"#);

@@ -35,6 +35,15 @@ asks for consent). Every other tool keeps whatever approval policy you set in Co
 - **Building with Codex from the app** starts `codex exec` with the same setting on its `-c`
   flags, so nothing in your config is needed.
 
+## Continuing a build
+
+After Codex starts a build, Craft Anything keeps its thread id with the project. Later build turns
+use `codex exec resume <thread-id>` and pass the same project tool server, scoped tool approvals,
+model and sandbox options. If Codex cannot find that thread and starts a different one, Craft
+Anything stops that turn and starts a new session from the project's current files and saved build
+brief. Codex keeps its session data in its own local profile, so copying a project to another
+computer may require this fresh-session fallback.
+
 ## Who still asks
 
 Approving `rebuild_start` in Codex doesn't remove Craft Anything's own consent: it runs a coding
@@ -59,5 +68,6 @@ again. Approving all of them (`default_tools_approval_mode = "approve"`) also ap
 no consent check of their own, such as `project_inbox_answer`, which can answer a pending approval,
 so we don't do it.
 
-Not yet verified on a real Codex install (this was written from Codex's published configuration
-keys, tested with stand-in output).
+The Codex CLI available while this was written reported `codex-cli 0.166.0-alpha.5.1`; its `exec`
+and `exec resume --help` output confirmed the argument forms used here. A real Craft Anything build,
+including a live `rebuild_start` call and a resumed turn, has not been run in this checkout.

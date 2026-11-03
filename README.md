@@ -151,8 +151,9 @@ Switch in the title bar or Settings, with `settings_set deep_mode true`, or for 
 Building needs a coding agent on your computer. **Claude Code** is supported first: Craft
 Anything runs your own, unmodified `claude` program, which uses your own sign-in; Craft Anything
 never sees or handles your account. Your use of it falls under your own agreement with
-Anthropic. See [docs/claude-code.md](docs/claude-code.md) for how and why. A Codex adapter
-exists but hasn't been verified on a real install yet. **GitHub Copilot** can use your installed
+Anthropic. See [docs/claude-code.md](docs/claude-code.md) for how and why. **Codex** is also supported
+as a builder through `codex exec`, including resuming a saved session; a real build has not been
+verified in this checkout. **GitHub Copilot** can use your installed
 Copilot CLI through ACP: sign in separately with `copilot login`. Other agents that speak ACP (Gemini CLI,
 Qwen Code, opencode, goose, Hermes, Maki) can be switched to it per backend; of those, only Maki has
 been run live. Anthropic, OpenAI, OpenRouter and local

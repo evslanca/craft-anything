@@ -235,8 +235,10 @@ laptops are covered by unit tests on fake `/sys/class/drm` folders only.
   with its writing tools, shell and code execution switched off, and Maki refuses anything else
   that would ask (an MCP server's tools, in subagents too) unless the person allowed it in Maki's
   own permissions. It hasn't been run as a `maki -p` builder here.
-- Claude Code is fully wired as a builder; Codex works through its own flags (our tools are pre-approved for
-  `codex exec`, see `docs/codex.md`) but is unverified on a real install and doesn't resume;
+- Claude Code is fully wired as a builder. Codex has a `codex exec` builder adapter with saved-thread
+  resumption and the same scoped MCP approvals (see `docs/codex.md`); local CLI help confirmed the
+  resume syntax, but a real build and resumed turn have not been verified here. It does not restore
+  Codex sessions when a project is moved to another computer;
   Copilot builds, model discovery and real-account session
   resume were confirmed by the person using the app. Other agent programs
   without an adapter get plain text in and out. API-key
