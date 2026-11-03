@@ -809,7 +809,8 @@ fn run_cli(spec: &CliSpec, text: &str, retry: bool, tx: &Sender<AgentEvent>, sto
         tx.send(AgentEvent::Status { text: format!("Asking {}{}…", display_for(&agent), remote.as_ref().map(|h| format!(" on {h}")).unwrap_or_default()) });
     let expected_session_id = if adapter.resumes() { resume.clone() } else { None };
     let parser = Arc::new(Mutex::new(StreamParser::for_run(adapter.clone(), expected_session_id)));
-    let (p2, tx2, tx_err, lost2, failure2) = (parser.clone(), tx.clone(), tx.clone(), lost.clone(), failure.clone());
+    let (p2, p_stderr, tx2, tx_err, lost2, lost_stderr, failure2) =
+        (parser.clone(), parser.clone(), tx.clone(), tx.clone(), lost.clone(), lost.clone(), failure.clone());
     let failed_tools = Arc::new(AtomicBool::new(false));
     let (failed_tools2, failed_tools3) = (failed_tools.clone(), failed_tools.clone());
     let lost_process = lost.clone();
@@ -845,7 +846,25 @@ fn run_cli(spec: &CliSpec, text: &str, retry: bool, tx: &Sender<AgentEvent>, sto
             }
         })
         .on_stderr_line(move |l| {
-            if !l.trim().is_empty() {
+            let text = l.trim();
+            if text.is_empty() {
+                return;
+            }
+            let missing = {
+                let mut p = p_stderr.lock().unwrap_or_else(PoisonError::into_inner);
+                if p.session_missing {
+                    return;
+                }
+                let missing = p.expected_session_id.is_some() && p.adapter.session_missing_in_stderr(text);
+                if missing {
+                    p.session_missing = true;
+                }
+                missing
+            };
+            if missing {
+                lost_stderr.store(true, Ordering::SeqCst);
+                let _ = tx_err.send(adapters::codex_session_missing_event());
+            } else {
                 let _ = tx_err.send(AgentEvent::Output { text: l.to_string() });
             }
         })

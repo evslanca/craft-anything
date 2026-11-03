@@ -126,6 +126,10 @@ pub trait AgentAdapter: Send + Sync {
     fn resumes(&self) -> bool {
         false
     }
+    /// Whether a stderr line says the requested resumed session is unavailable.
+    fn session_missing_in_stderr(&self, _line: &str) -> bool {
+        false
+    }
     /// It honours [`ArgsCx::question`]: it can be held to reading only, using a fresh session
     /// or leaving a resumed session unchanged. Questions go only to adapters that say so.
     fn answers_questions(&self) -> bool {
@@ -768,6 +772,10 @@ impl AgentAdapter for Codex {
         true
     }
 
+    fn session_missing_in_stderr(&self, line: &str) -> bool {
+        codex_session_missing_text(line)
+    }
+
     fn parse(&self, p: &mut StreamParser, v: &Value) -> Vec<AgentEvent> {
         let mut out = Vec::new();
         if p.session_missing {
@@ -833,13 +841,15 @@ fn codex_session_missing(v: &Value, message: &str) -> bool {
     if matches!(code, Some("thread_not_found" | "session_not_found")) {
         return true;
     }
-    let message = message.to_ascii_lowercase();
-    (message.starts_with("thread ") && message.contains(" not found"))
-        || message.contains("thread/resume failed") && message.contains("no rollout found")
-        || message.contains("no rollout found for thread")
+    codex_session_missing_text(message)
 }
 
-fn codex_session_missing_event() -> AgentEvent {
+fn codex_session_missing_text(message: &str) -> bool {
+    let message = message.to_ascii_lowercase();
+    message.contains("thread") && (message.contains("not found") || message.contains("no rollout found") || message.contains("not loaded"))
+}
+
+pub(super) fn codex_session_missing_event() -> AgentEvent {
     AgentEvent::Error {
         message: "Codex couldn't find the saved conversation for this project.".into(),
         remediation: Some("A new Codex session will start from the current project files and saved build brief.".into()),

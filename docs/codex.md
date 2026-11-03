@@ -39,10 +39,10 @@ asks for consent). Every other tool keeps whatever approval policy you set in Co
 
 After Codex starts a build, Craft Anything keeps its thread id with the project. Later build turns
 use `codex exec resume <thread-id>` and pass the same project tool server, scoped tool approvals,
-model and sandbox options. If Codex cannot find that thread and starts a different one, Craft
-Anything stops that turn and starts a new session from the project's current files and saved build
-brief. Codex keeps its session data in its own local profile, so copying a project to another
-computer may require this fresh-session fallback.
+model and sandbox options. Craft Anything detects either a different thread id or Codex's `thread
+not loaded` error, stops that turn and starts a new session from the project's current files and
+saved build brief. Codex keeps its session data in its own local profile, so copying a project to
+another computer may require this fresh-session fallback.
 
 ## Who still asks
 

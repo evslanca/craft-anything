@@ -428,7 +428,7 @@ Owner: open · Status: in progress
       `null`; setup and the builder now approve our tools for Codex (we still ask before running
       code) and a refusal explains the fix (`docs/codex.md`)
 - [ ] Codex (#540): run `codex exec` on a real install and check `rebuild_start` gets through
-- [x] Codex: resume builds with `codex exec resume <id>`; if Codex starts a different thread, continue from the project's files and saved brief
+- [x] Codex: resume builds with `codex exec resume <id>`; if the saved thread is missing, continue from the project's files and saved brief
 - [ ] Codex: verify a resumed build on a real install
 - [ ] Every adapter but Claude Code's still takes the message in argv (`prompt_on_stdin`), so a long
       one can pass Windows' command-line limit as Claude Code's did (#402); hand each its message on
