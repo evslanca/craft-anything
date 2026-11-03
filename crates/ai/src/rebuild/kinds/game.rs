@@ -33,7 +33,25 @@ impl TargetKind for GameKind {
         // say ("Clone <its title> 1:1" never says "game").
         if game::Builder::from_stack(cx.stack).is_some() {
             Some(200)
-        } else if cx.says(&["game", "gameplay", "steam", "level", "player", "游戏", "遊戲", "玩法", " spiel", "-spiel"]) {
+        } else if cx.says(&[
+            "game",
+            "gameplay",
+            "steam",
+            "level",
+            "player",
+            "jogo",
+            "jogar",
+            "jogabilidade",
+            "jogador",
+            "partida",
+            "pontuação",
+            "fase",
+            "游戏",
+            "遊戲",
+            "玩法",
+            " spiel",
+            "-spiel",
+        ]) {
             Some(60)
         } else {
             None
