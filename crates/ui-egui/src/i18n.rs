@@ -28,6 +28,7 @@ pub static LANGUAGES: &[LangInfo] = &[
     LangInfo { code: "ru", name: "Русский", source: include_str!("i18n/ru.tsv") },
     LangInfo { code: "ko", name: "한국어", source: include_str!("i18n/ko.tsv") },
     LangInfo { code: "cs", name: "Čeština", source: include_str!("i18n/cs.tsv") },
+    LangInfo { code: "pt-br", name: "Português (Brasil)", source: include_str!("i18n/pt-br.tsv") },
 ];
 
 /// Match a locale to a registered UI language. An explicit script wins over the region.
@@ -39,6 +40,7 @@ pub fn language_from_tag(tag: &str) -> Option<&'static str> {
     let mut parts = tag.split('-');
     let primary = parts.next()?;
     match primary {
+        "pt" if tag == "pt" || tag.starts_with("pt-br-") => Some("pt-br"),
         "zh" => {
             let parts: Vec<_> = parts.take_while(|p| p.len() != 1).collect();
             if parts.contains(&"hant") {
@@ -159,7 +161,7 @@ mod tests {
             out
         }
         let mut catalogs = Vec::new();
-        for lang in LANGUAGES.iter().filter(|l| matches!(l.code, "zh-hans" | "zh-hant" | "ru" | "ko" | "cs" | "de")) {
+        for lang in LANGUAGES.iter().filter(|l| matches!(l.code, "zh-hans" | "zh-hant" | "ru" | "ko" | "cs" | "de" | "pt-br")) {
             let mut keys = std::collections::BTreeSet::new();
             for (i, line) in lang.source.lines().enumerate() {
                 if line.trim().is_empty() || line.starts_with('#') {

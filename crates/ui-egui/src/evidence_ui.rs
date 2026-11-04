@@ -119,6 +119,16 @@ fn details(ui: &mut Ui, e: &Evidence, t: &Tokens) {
 
 /// `native_strings_browse` → "Native strings browse".
 pub fn nice_operation(op: &str) -> String {
+    let translated_label = match op {
+        "native_function_callers_list" => Some("Native function callers list"),
+        "native_function_pseudocode" => Some("Native function pseudocode"),
+        "native_functions_list" => Some("Native functions list"),
+        "native_strings_browse" => Some("Native strings browse"),
+        _ => None,
+    };
+    if let Some(label) = translated_label {
+        return tr(label).to_string();
+    }
     let s = op.replace(['_', '.'], " ");
     let mut c = s.chars();
     match c.next() {

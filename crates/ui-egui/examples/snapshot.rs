@@ -22,6 +22,202 @@ fn arg(args: &[String], name: &str) -> Option<String> {
 /// `--lang`: the UI language for every scene (English when absent).
 static LANG: std::sync::OnceLock<String> = std::sync::OnceLock::new();
 
+fn pt_br() -> bool {
+    LANG.get().is_some_and(|language| language.eq_ignore_ascii_case("pt-br"))
+}
+
+fn localize_demo_text(text: &mut String) {
+    let translated = match text.as_str() {
+        "Recreate this website" => "Recrie este site",
+        "A snake game" => "Um jogo da cobrinha",
+        "A snake game in Rust" => "Um jogo da cobrinha em Rust",
+        "Snake" => "Cobrinha",
+        "Notes" => "Notas",
+        "Where is the update check called from?" => "De onde a verificação de atualizações é chamada?",
+        "1 caller: main+0x8c" => "1 chamada: main+0x8c",
+        "Found the word \"percent\" next to a function." => "Encontrei a palavra \"percent\" ao lado de uma função.",
+        "When you press %, the calculator divides the number on screen by 100 and shows the result. It reads the display, does one division, then redraws." => {
+            "Ao pressionar %, a calculadora divide por 100 o número exibido e mostra o resultado. Ela lê o visor, faz a divisão e atualiza a tela."
+        }
+        "16 functions found by following calls from the entry point." => "16 funções encontradas a partir das chamadas feitas pelo ponto de entrada.",
+        "7 readable strings, including a web address used to check for updates." => "7 textos legíveis, incluindo o endereço usado para buscar atualizações.",
+        "`check_for_updates` (0x401cf0) is called once, from `main` at 0x4010bc, after the window opens. It calls `http_get` with the URL string at offset 0x78." => {
+            "`check_for_updates` (0x401cf0) é chamada uma vez por `main` em 0x4010bc, depois que a janela abre. Ela chama `http_get` com o endereço localizado na posição 0x78."
+        }
+        "Rebuild this app in Rust" => "Recrie este aplicativo em Rust",
+        "Opening https://example.com in a private browser…" => "Abrindo https://example.com em uma janela privada…",
+        "Photographing the page and reading its layout…" => "Capturando a página e analisando o layout…",
+        "Building the first version…" => "Criando a primeira versão…",
+        "Checking the build against the original…" => "Comparando a criação com o original…",
+        "I studied the screenshots and the layout: one centred card with a heading, two short paragraphs and a link, on a soft grey page." => {
+            "Analisei as capturas de tela e o layout: um cartão centralizado com título, dois parágrafos curtos e um link sobre uma página cinza-clara."
+        }
+        "Your version is ready: a centred card with the same spacing, font sizes and colours as the original, built with React. The words are placeholders. You could ask for a dark mode or a contact form next." => {
+            "Sua versão está pronta: um cartão centralizado com os mesmos espaçamentos, tamanhos de fonte e cores do original, criado com React. Os textos são exemplos. Você pode pedir um modo escuro ou um formulário de contato."
+        }
+        "Is example.com your site, or should I use placeholder text?" => "Este site é seu ou devo usar textos de exemplo?",
+        "If it's yours, I can keep the original wording." => "Se for seu, posso manter os textos originais.",
+        "It's mine — keep the text" => "É meu — mantenha os textos",
+        "Use placeholder text" => "Use textos de exemplo",
+        "Run a command: `curl https://example.com/robots.txt`" => "executar este comando: `curl https://example.com/robots.txt`",
+        "Your snake game is ready: arrow keys to steer, eat the dots to grow, and the speed goes up as you score." => {
+            "Seu jogo da cobrinha está pronto: use as setas para mudar de direção, coma os pontos para crescer e avance mais rápido conforme marca pontos."
+        }
+        "Study the page's layout and colours" => "Analise o layout e as cores do site",
+        "Build the heading and the card" => "Crie o título e o cartão",
+        "Add the contact form" => "Adicione o formulário de contato",
+        "Match the spacing on phones" => "Ajuste os espaçamentos para celulares",
+        _ => return,
+    };
+    *text = translated.into();
+}
+
+fn localize_check(check: &mut craft_anything_engine::workspace::CheckResult) {
+    check.note = "1440 px: 95% de semelhança (altura da página: 900 vs. 912 px); 390 px: 92% de semelhança (altura da página: 900 vs. 940 px)".into();
+    for page in &mut check.pages {
+        if page.name == "start page" {
+            page.name = "página inicial".into();
+        }
+    }
+    for claim in &mut check.claims {
+        claim.title = match claim.title.as_str() {
+            "The start page doesn't scroll sideways at 390 px" => "A página inicial não rola na horizontal em 390 px".into(),
+            "The start page loads every file it asks for" => "A página inicial carrega todos os arquivos solicitados".into(),
+            "/about doesn't scroll sideways at 390 px" => "A página /about não rola na horizontal em 390 px".into(),
+            _ => claim.title.clone(),
+        };
+        if claim.detail == "it's 412 px wide" {
+            claim.detail = "tem 412 px de largura".into();
+        }
+    }
+}
+
+fn localize_demo(app: &mut CraftApp) {
+    if !pt_br() {
+        return;
+    }
+
+    localize_demo_text(&mut app.state.make.request);
+    for target in &mut app.view.targets {
+        if target.name == "calculator" {
+            target.name = "calculadora".into();
+        }
+    }
+    {
+        let mut session = app.engine.session();
+        let target_ids: Vec<_> = session.targets().map(|open| open.target.id.clone()).collect();
+        for id in target_ids {
+            if let Some(open) = session.target_mut(&id)
+                && open.target.name == "calculator"
+            {
+                open.target.name = "calculadora".into();
+            }
+        }
+        let evidence: Vec<_> = session.ledger().cloned().collect();
+        for mut item in evidence {
+            if item.subject.name.as_deref() == Some("calculator") {
+                item.subject.name = Some("calculadora".into());
+            }
+            localize_demo_text(&mut item.summary);
+            if let Some(serde_json::Value::String(code)) = item.result.get_mut("pseudo_c") {
+                *code = code.replace("// the whole trick", "// o segredo");
+            }
+            let _ = session.record(item);
+        }
+    }
+    for item in &mut app.view.ledger {
+        if item.subject.name.as_deref() == Some("calculator") {
+            item.subject.name = Some("calculadora".into());
+        }
+        localize_demo_text(&mut item.summary);
+        if let Some(serde_json::Value::String(code)) = item.result.get_mut("pseudo_c") {
+            *code = code.replace("// the whole trick", "// o segredo");
+        }
+    }
+    for workspace in app.projects.iter_mut().chain(app.workspace.iter_mut()) {
+        localize_demo_text(&mut workspace.manifest.name);
+        localize_demo_text(&mut workspace.manifest.request);
+        for check in &mut workspace.manifest.checks {
+            localize_check(check);
+        }
+    }
+    for question in &mut app.facts.open_questions {
+        if question == "May the original's logo and text be reused, or must they be placeholders?" {
+            *question = "O logotipo e os textos originais podem ser reutilizados ou devem ser substituídos por exemplos?".into();
+        }
+    }
+    for item in &mut app.state.feed {
+        use craft_anything_ui_egui::state::{FeedItem, UserItem};
+        match item {
+            FeedItem::User(UserItem::Text(text) | UserItem::WithPictures { text, .. }) => localize_demo_text(text),
+            FeedItem::Step { text, .. } | FeedItem::Agent { text, .. } => localize_demo_text(text),
+            FeedItem::Plan(steps) => {
+                for step in steps {
+                    localize_demo_text(&mut step.text);
+                    localize_demo_text(&mut step.doing);
+                }
+            }
+            FeedItem::Ask { request, answer } => {
+                localize_demo_text(&mut request.title);
+                localize_demo_text(&mut request.detail);
+                for choice in &mut request.choices {
+                    localize_demo_text(choice);
+                }
+                if let Some(answer) = answer {
+                    localize_demo_text(answer);
+                }
+            }
+            FeedItem::Check(check) => localize_check(check),
+            _ => {}
+        }
+    }
+    for item in &mut app.state.chat {
+        use craft_anything_ui_egui::state::ChatItem;
+        match item {
+            ChatItem::User(text) | ChatItem::Status(text) => localize_demo_text(text),
+            ChatItem::Assistant { text, .. } => localize_demo_text(text),
+            ChatItem::Tool { summary, evidence, .. } => {
+                localize_demo_text(summary);
+                if let Some(evidence) = evidence {
+                    localize_demo_text(&mut evidence.summary);
+                    if evidence.subject.name.as_deref() == Some("calculator") {
+                        evidence.subject.name = Some("calculadora".into());
+                    }
+                }
+            }
+            ChatItem::Proof { intro, evidence } => {
+                localize_demo_text(intro);
+                localize_demo_text(&mut evidence.summary);
+                if evidence.subject.name.as_deref() == Some("calculator") {
+                    evidence.subject.name = Some("calculadora".into());
+                }
+            }
+            ChatItem::Consent { title, explanation, .. } => {
+                localize_demo_text(title);
+                localize_demo_text(explanation);
+            }
+            ChatItem::Error { message, remediation, .. } => {
+                localize_demo_text(message);
+                if let Some(remediation) = remediation {
+                    localize_demo_text(remediation);
+                }
+            }
+            ChatItem::AddBrain => {}
+        }
+    }
+    for fill in app.state.views.values_mut().chain(app.state.lists.values_mut()) {
+        if let craft_anything_ui_egui::state::Fill::Ready(evidence) = fill {
+            localize_demo_text(&mut evidence.summary);
+            if evidence.subject.name.as_deref() == Some("calculator") {
+                evidence.subject.name = Some("calculadora".into());
+            }
+            if let Some(serde_json::Value::String(code)) = evidence.result.get_mut("pseudo_c") {
+                *code = code.replace("// the whole trick", "// o segredo");
+            }
+        }
+    }
+}
+
 fn render(out: &std::path::Path, name: &str, w: f32, h: f32, scale: f32, make: impl FnOnce() -> CraftApp + 'static) {
     let mut harness =
         egui_kittest::Harness::builder().with_size(egui::vec2(w, h)).with_pixels_per_point(scale).with_max_steps(64).wgpu().build_eframe(move |cc| {
@@ -29,6 +225,7 @@ fn render(out: &std::path::Path, name: &str, w: f32, h: f32, scale: f32, make: i
             let mut app = make();
             app.settings.language = LANG.get().cloned().unwrap_or_else(|| "en".into());
             craft_anything_ui_egui::i18n::set_language(&app.settings.language);
+            localize_demo(&mut app);
             app
         });
     // Let fonts, SVG icons and fades settle.

@@ -33,7 +33,9 @@ asks for consent). Every other tool keeps whatever approval policy you set in Co
   `craft-anything-cli doctor --client codex` reports an entry without the approval as "a different
   copy or shape of the command"; running setup again fixes it.
 - **Building with Codex from the app** starts `codex exec` with the same setting on its `-c`
-  flags, so nothing in your config is needed.
+  flags, so nothing in your config is needed. Chats and builds also start the Craft Anything MCP
+  server with `--all-tools`: Codex doesn't refresh its callable tool list after `enable_toolset`,
+  so every tool permitted by the current mode is listed from startup. Clean room restrictions still apply.
 
 ## Continuing a build
 
@@ -69,5 +71,7 @@ no consent check of their own, such as `project_inbox_answer`, which can answer 
 so we don't do it.
 
 The Codex CLI available while this was written reported `codex-cli 0.166.0-alpha.5.1`; its `exec`
-and `exec resume --help` output confirmed the argument forms used here. A real Craft Anything build,
-including a live `rebuild_start` call and a resumed turn, has not been run in this checkout.
+and `exec resume --help` output confirmed the argument forms used here. Startup tool discovery was also
+verified with Codex CLI 0.166.0, a loopback model and the real MCP server: Codex received 107
+Clean-room-permitted tools, including non-Core tools, while Deep-only tools stayed hidden. A real-account
+build and resumed turn have not been run in this checkout.

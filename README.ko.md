@@ -14,7 +14,7 @@
 <h1 align="center">Craft Anything</h1>
 
 <p align="center">
-  <a href="README.md">English</a> · <a href="README.ja.md">日本語</a> · <a href="README.zh.md">简体中文</a> · <b>한국어</b>
+  <a href="README.en.md">English</a> · <a href="README.ja.md">日本語</a> · <a href="README.zh.md">简体中文</a> · <b>한국어</b>
 </p>
 
 <p align="center">
@@ -327,3 +327,7 @@ Copyright (c) 2026 ArtCraft Team and the Craft Anything contributors. 필수 고
   <a href="https://getartcraft.com/"><img alt="ArtCraft" src="docs/brand/artcraft-mark.svg" width="28"></a><br>
   <sub><a href="https://getartcraft.com/">ArtCraft</a> 팀과 커뮤니티가 만들었습니다.</sub>
 </p>
+
+---
+
+<sub>이 문서는 [README.md](README.md)의 한국어 번역입니다. 내용이 다를 경우 영어판이 우선합니다.</sub>
