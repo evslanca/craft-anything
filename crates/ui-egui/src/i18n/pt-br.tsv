@@ -1427,3 +1427,24 @@ Drag to give the plan more or less room; double-click to reset	Arraste para ajus
 Fold a project's plan	Recolher o plano do projeto
 Fold the plan	Recolher o plano
 The Claude desktop app is installed, but building needs Claude Code, its separate command-line tool. Install Claude Code, sign in to it once in a terminal, then look again.	O aplicativo de desktop do Claude está instalado, mas para criar projetos é necessário o Claude Code, uma ferramenta de linha de comando separada. Instale o Claude Code, faça login uma vez pelo terminal e tente novamente.
+Unreal is here, but its bundled Clang C++ toolchain wasn't found.	O Unreal está instalado, mas não foi encontrada a toolchain Clang C++ que vem com ele.
+Add Unreal's Linux C++ toolchain	Adicionar a toolchain C++ do Unreal para Linux
+Run Engine/Build/BatchFiles/Linux/SetupToolchain.sh in the engine folder to install its bundled Clang toolchain. If you built Unreal from source, Setup.sh downloads the native toolchain instead. A system Clang may not match the engine's version.	Execute Engine/Build/BatchFiles/Linux/SetupToolchain.sh na pasta do engine para instalar a toolchain Clang que vem com ele. Se você compilou o Unreal a partir do código-fonte, Setup.sh baixa a toolchain nativa. Uma versão do Clang do sistema pode não corresponder à versão do engine.
+Unreal is here, but it also needs Xcode.	O Unreal está instalado, mas também precisa do Xcode.
+About 60 GB, an Epic Games account, and Xcode.	Cerca de 60 GB, uma conta da Epic Games e o Xcode.
+File	Arquivo
+View	Visualizar
+Window	Janela
+Help	Ajuda
+Command palette	Paleta de comandos
+Craft Anything on GitHub	Craft Anything no GitHub
+Report a problem…	Relatar um problema…
+Quit Craft Anything	Sair do Craft Anything
+Services	Serviços
+Hide Craft Anything	Ocultar Craft Anything
+Hide others	Ocultar outros
+Show all	Mostrar tudo
+Close window	Fechar janela
+Full screen	Tela cheia
+Zoom	Zoom
+Bring all to front	Trazer tudo para a frente
