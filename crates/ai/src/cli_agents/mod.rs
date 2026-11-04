@@ -55,6 +55,41 @@ pub fn program_for(agent: &str) -> String {
     KNOWN.iter().find(|(id, _, _)| *id == agent).map(|(_, p, _)| p.to_string()).unwrap_or_else(|| agent.to_string())
 }
 
+/// The program a backend runs: the one chosen for it, else the agent's usual name. A chosen path
+/// that's gone from this computer is looked for again (#721): an agent that installs each version
+/// in a folder of its own (Codex's `bin/<build>/codex.exe`) moves on every update, so the same file
+/// in the newest folder beside the old one is used, else the usual name on PATH. On another
+/// computer (ssh) the chosen command is used as it is.
+pub fn program_of(config: &BackendConfig, options: &BackendOptions) -> String {
+    let usual = program_for(&config.model);
+    let Some(chosen) = options.command.as_deref().map(str::trim).filter(|c| !c.is_empty()) else { return usual };
+    let local = config.ssh_host.as_deref().is_none_or(|h| h.trim().is_empty());
+    // A folder or app bundle saved before set_command refused it (#467) can't be started: the usual
+    // program is used, as when none is chosen.
+    if local && Path::new(chosen).is_dir() {
+        return usual;
+    }
+    let path = Path::new(chosen);
+    if !local || path.parent().is_none_or(|p| p.as_os_str().is_empty()) || path.exists() {
+        return chosen.to_string();
+    }
+    moved_program(path).or_else(|| craft_anything_platform::which(&usual).map(|_| usual)).unwrap_or_else(|| chosen.to_string())
+}
+
+/// The same file in the most recently changed sibling of its missing folder, if there is one.
+fn moved_program(missing: &Path) -> Option<String> {
+    let file = missing.file_name()?;
+    let versions = missing.parent()?.parent()?;
+    std::fs::read_dir(versions)
+        .ok()?
+        .flatten()
+        .take(256)
+        .map(|e| e.path().join(file))
+        .filter(|p| p.is_file())
+        .max_by_key(|p| p.metadata().and_then(|m| m.modified()).ok())
+        .map(|p| p.display().to_string())
+}
+
 pub fn display_for(agent: &str) -> String {
     KNOWN.iter().find(|(id, _, _)| *id == agent).map(|(_, _, d)| d.to_string()).unwrap_or_else(|| agent.to_string())
 }
@@ -510,7 +545,7 @@ fn acp_for(spec: &CliSpec) -> Option<AcpConversation> {
     }
     let local = spec.config.ssh_host.as_deref().is_none_or(|h| h.trim().is_empty());
     let acp_args = selected_acp_args(adapter.as_ref(), &agent, &spec.options).filter(|_| local)?;
-    let program = spec.options.command.clone().unwrap_or_else(|| program_for(&agent));
+    let program = program_of(&spec.config, &spec.options);
     let access = match (spec.question, spec.deep, spec.builder.is_some()) {
         (true, true, _) => Access::Question,
         (true, false, _) => Access::CleanRoomQuestion,
@@ -713,7 +748,7 @@ fn run_cli(spec: &CliSpec, text: &str, retry: bool, tx: &Sender<AgentEvent>, sto
     let RunState { session, verified, lost, failure } = state;
     let name = spec.config.name.clone();
     let agent = spec.config.model.clone();
-    let program = spec.options.command.clone().unwrap_or_else(|| program_for(&agent));
+    let program = program_of(&spec.config, &spec.options);
     let remote = spec.config.ssh_host.clone().filter(|h| !h.trim().is_empty());
     // A folder chosen for it is on the computer it runs on: on another one, it's set below.
     let mut adapter = match remote {
@@ -1065,6 +1100,39 @@ impl Drop for CliConversation {
 mod tests {
     use super::*;
 
+    /// #721: Codex's desktop app keeps its CLI in `bin/<build>/codex.exe` and moves it on every
+    /// update; a backend set to the old path kept failing on a file that was gone.
+    #[test]
+    fn a_chosen_program_that_moved_with_an_update_is_found_again() {
+        let d = tempfile::tempdir().unwrap();
+        let bin = d.path().join("Codex/bin");
+        let new = bin.join("build-2").join("codex.exe");
+        std::fs::create_dir_all(new.parent().unwrap()).unwrap();
+        std::fs::write(&new, b"").unwrap();
+        let gone = bin.join("build-1").join("codex.exe");
+        let config = |ssh: Option<&str>| BackendConfig {
+            name: "Codex".into(),
+            kind: crate::BackendKind::AgentCli,
+            model: "codex".into(),
+            base_url: None,
+            ssh_host: ssh.map(str::to_string),
+            enabled: true,
+        };
+        let chosen = |p: &Path| BackendOptions { command: Some(p.display().to_string()), ..Default::default() };
+        assert_eq!(program_of(&config(None), &chosen(&gone)), new.display().to_string(), "the same file in the newer build folder");
+        assert_eq!(program_of(&config(None), &chosen(&new)), new.display().to_string(), "a path that's there is used as it is");
+        assert_eq!(program_of(&config(Some("box")), &chosen(&gone)), gone.display().to_string(), "another computer's path isn't checked here");
+        assert_eq!(program_of(&config(None), &BackendOptions::default()), "codex", "nothing chosen: the usual name");
+        // #467: a saved app bundle is never started; the usual name is looked up instead.
+        let dir = tempfile::tempdir().unwrap();
+        let bundle = dir.path().join("Codex.app");
+        std::fs::create_dir_all(&bundle).unwrap();
+        assert_eq!(program_of(&config(None), &chosen(&bundle)), "codex", "an app bundle is not the program");
+        assert_eq!(program_of(&config(Some("box")), &chosen(&bundle)), bundle.display().to_string(), "another computer's path isn't checked here");
+        let bare = BackendOptions { command: Some("my-codex".into()), ..Default::default() };
+        assert_eq!(program_of(&config(None), &bare), "my-codex", "a bare name is left to PATH");
+    }
+
     #[test]
     fn failed_craft_tool_server_is_reported_from_its_init_status() {
         let mut p = StreamParser::new(adapter_for("claude-code"));
@@ -1399,7 +1467,14 @@ mod tests {
         let o = BackendOptions { args: vec!["--skip-git-repo-check".into()], ..Default::default() };
         assert_eq!(skip(&build_args(adapter_for("codex").as_ref(), &o, "q", "P:", &mcp(), None, Access::Build)), 1);
         assert!(a.contains(&"mcp_servers.craft-anything.command=\"/opt/ca/craft-anything-cli\"".to_string()));
-        assert!(a.contains(&"mcp_servers.craft-anything.args=[\"mcp\", \"--project\", \"/p/x.cany\"]".to_string()));
+        // #538: Codex doesn't refresh its callable tools after enable_toolset, so list all permitted
+        // tools from startup. Clean room still filters what the server lists and allows.
+        assert!(a.contains(&"mcp_servers.craft-anything.args=[\"mcp\", \"--project\", \"/p/x.cany\", \"--all-tools\"]".to_string()));
+        let mut already_all = mcp();
+        already_all.args.push("--all-tools".into());
+        let deep = build_args(adapter_for("codex").as_ref(), &BackendOptions::default(), "q", "P:", &already_all, None, Access::Build);
+        let args = deep.iter().find(|a| a.starts_with("mcp_servers.craft-anything.args=")).unwrap();
+        assert_eq!(args.matches("--all-tools").count(), 1, "a Deep build already lists every tool");
         // #528: the message goes in on stdin; `-` tells `codex exec` to read it there.
         assert_eq!(a.last().unwrap(), "-");
         // #540: `codex exec` can't ask, so the tools that ask for themselves are approved in the
@@ -1426,7 +1501,7 @@ mod tests {
         assert!(a.contains(&"--skip-git-repo-check".to_string()));
         assert!(a.windows(2).any(|w| w[0] == "--sandbox" && w[1] == "workspace-write"));
         assert!(a.contains(&"mcp_servers.craft-anything.command=\"/opt/ca/craft-anything-cli\"".to_string()));
-        assert!(a.contains(&"mcp_servers.craft-anything.args=[\"mcp\", \"--project\", \"/p/x.cany\"]".to_string()));
+        assert!(a.contains(&"mcp_servers.craft-anything.args=[\"mcp\", \"--project\", \"/p/x.cany\", \"--all-tools\"]".to_string()));
     }
 
     #[test]

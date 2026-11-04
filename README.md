@@ -141,6 +141,8 @@ Ambos os modos acionam o mesmo motor.
   mecanismos integrados e, se estiver instalado, o Ghidra. Também pode ler o JavaScript de um site e observar
   sua página inicial. O agente de criação pode usar essas informações.
 
+**Sala limpa é uma regra sobre o que o Craft Anything oferece e recusa. Ela não é um sandbox do sistema operacional e não isola seu computador.** Um agente de programação executado por você continua agindo com as permissões da sua conta; o que ele pode ler, gravar ou executar depende dessas permissões. A capacidade do Craft Anything de recusar ferramentas próprias do agente varia conforme o agente. Para as ferramentas do Claude Code em conversas e perguntas, consulte [docs/claude-code.md](docs/claude-code.md).
+
 Alterne os modos na barra de título ou em **Configurações**. Também é possível usar `settings_set deep_mode true`
 ou passar `--deep` (ou `--clean-room`) em uma única execução pela CLI.
 
@@ -259,6 +261,8 @@ examinar. O aplicativo não burla DRM, autenticação nem sistemas anti-cheat. A
 layout, estilo e comportamento com base nas evidências. O agente não deve copiar logotipos, imagens ou textos
 sem sua confirmação de que você é o titular ou tem permissão para usá-los.
 
+**Instalar dependências executa código.** Ao instalar as dependências de um projeto, os comandos rodam no seu computador, e os pacotes podem executar código durante a instalação. O npm executa por padrão os scripts de instalação dos pacotes; scripts de compilação do Rust e pacotes Python de código-fonte também executam seu próprio código de configuração. O Craft Anything pede confirmação antes de executar um tipo de comando que ainda não conhece naquele projeto (`npm`, `cargo`…). Ao escolher “sempre permitir” para `npm`, os comandos npm seguintes rodam sem nova pergunta; use essa opção apenas em projetos cujas dependências você confia. Para instalar pacotes npm sem executar os scripts de instalação, use `npm install --ignore-scripts`.
+
 ## Downloads
 
 No GitHub, a [versão mais recente](https://github.com/storytold/craft-anything/releases/latest) reúne os downloads abaixo. A página de [todas as versões](https://github.com/storytold/craft-anything/releases) também inclui versões anteriores e suas notas. `<ver>` representa o número da versão nos nomes dos arquivos; `SHA256SUMS.txt` lista o hash SHA-256 de cada arquivo.
@@ -302,6 +306,29 @@ Se você já baixou uma cópia bloqueada, clique em **Concluído** (não em **Mo
 `xattr -d com.apple.quarantine <path to craft-anything-cli>`, ou autorize a abertura em **Ajustes do Sistema →
 Privacidade e Segurança → Abrir Mesmo Assim**.
 
+#### Como verificar a assinatura e a notarização de um download no macOS
+
+Todas as versões para Mac são assinadas com um certificado Developer ID e notarizadas pela Apple. Para
+verificar um download, execute estes comandos no Terminal (substitua `<ver>` pela versão e ajuste os caminhos):
+
+```sh
+# Imagem de disco: "accepted" e "source=Notarized Developer ID" indicam que passou
+spctl --assess --type open --context context:primary-signature -v "craft-anything-<ver>-macos-universal.dmg"
+# O ticket de notarização está anexado: imprime "The validate action worked!"
+xcrun stapler validate "craft-anything-<ver>-macos-universal.dmg"
+
+# O aplicativo, depois de abrir a imagem de disco: a assinatura precisa ser válida
+codesign --verify --deep --strict --verbose=2 "/Volumes/<disk image name>/Craft Anything.app"
+spctl --assess --type execute --verbose "/Volumes/<disk image name>/Craft Anything.app"
+
+# A ferramenta de linha de comando: um executável isolado não leva o ticket; o macOS o verifica online
+codesign --verify --strict --verbose=2 ~/.local/bin/craft-anything-cli
+codesign -dv --verbose=4 ~/.local/bin/craft-anything-cli 2>&1 | grep Authority
+```
+
+As linhas `Authority` devem mencionar um certificado “Developer ID Application”. Se alguma verificação
+falhar, não execute o arquivo; informe a saída e a tag da versão.
+
 ### Linux
 
 | Formato | x86_64 | aarch64 (ARM64) | Notas |
@@ -312,7 +339,11 @@ Privacidade e Segurança → Abrir Mesmo Assim**.
 | Fedora/RHEL/openSUSE | `craft-anything-<ver>-linux-x86_64.rpm` | `craft-anything-<ver>-linux-aarch64.rpm` | |
 | Tarball | `craft-anything-<ver>-linux-x86_64.tar.gz` | `craft-anything-<ver>-linux-aarch64.tar.gz` | Descompacte em qualquer lugar |
 
-RISC-V (riscv64): `craft-anything-<ver>-linux-riscv64.tar.gz`, apenas um tarball.
+RISC-V (riscv64): `craft-anything-<ver>-linux-riscv64.tar.gz`, somente em arquivo tar.
+
+O AppImage também inclui a CLI: execute `<AppImage> --cli <command>` (por exemplo,
+`<AppImage> --cli mcp` para um cliente MCP) ou crie um link para o AppImage chamado
+`craft-anything-cli` e execute esse link.
 
 ### FreeBSD
 
