@@ -37,6 +37,15 @@ asks for consent). Every other tool keeps whatever approval policy you set in Co
   server with `--all-tools`: Codex doesn't refresh its callable tool list after `enable_toolset`,
   so every tool permitted by the current mode is listed from startup. Clean room restrictions still apply.
 
+## Continuing a build
+
+After Codex starts a build, Craft Anything keeps its thread id with the project. Later build turns
+use `codex exec resume <thread-id>` and pass the same project tool server, scoped tool approvals,
+model and sandbox options. Craft Anything detects either a different thread id or Codex's `thread
+not loaded` error, stops that turn and starts a new session from the project's current files and
+saved build brief. Codex keeps its session data in its own local profile, so copying a project to
+another computer may require this fresh-session fallback.
+
 ## Who still asks
 
 Approving `rebuild_start` in Codex doesn't remove Craft Anything's own consent: it runs a coding
@@ -61,6 +70,8 @@ again. Approving all of them (`default_tools_approval_mode = "approve"`) also ap
 no consent check of their own, such as `project_inbox_answer`, which can answer a pending approval,
 so we don't do it.
 
-Startup tool discovery was verified with Codex CLI 0.166.0, a loopback model and the real MCP server:
-Codex received 107 Clean-room-permitted tools, including non-Core tools, while Deep-only tools stayed
-hidden. No real-account build was run.
+The Codex CLI available while this was written reported `codex-cli 0.166.0-alpha.5.1`; its `exec`
+and `exec resume --help` output confirmed the argument forms used here. Startup tool discovery was also
+verified with Codex CLI 0.166.0, a loopback model and the real MCP server: Codex received 107
+Clean-room-permitted tools, including non-Core tools, while Deep-only tools stayed hidden. A real-account
+build and resumed turn have not been run in this checkout.

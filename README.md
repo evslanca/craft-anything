@@ -158,8 +158,9 @@ ou passar `--deep` (ou `--clean-room`) em uma única execução pela CLI.
 Para criar projetos, é necessário ter um agente de programação no computador. O **Claude Code** tem suporte
 prioritário: o Craft Anything executa o programa `claude` original e usa a sua autenticação. O aplicativo
 nunca acessa nem controla sua conta; o uso segue os termos que você aceitou com a Anthropic. Consulte
-[docs/claude-code.md](docs/claude-code.md) para entender a integração. Há também um adaptador para Codex,
-mas ele ainda não foi validado em uma instalação real.
+[docs/claude-code.md](docs/claude-code.md) para entender a integração. O **Codex** também funciona como
+agente de criação via `codex exec` e retoma sessões salvas. A sintaxe foi confirmada na CLI local; um build
+real e uma retomada ao vivo ainda não foram verificados neste checkout.
 
 O **GitHub Copilot** funciona pela CLI instalada, usando ACP; autentique-se separadamente com `copilot login`.
 Outros agentes compatíveis com ACP — Gemini CLI, Qwen Code, opencode, goose, Hermes e Maki — podem ser

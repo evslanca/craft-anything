@@ -126,6 +126,10 @@ pub trait AgentAdapter: Send + Sync {
     fn resumes(&self) -> bool {
         false
     }
+    /// Whether a stderr line says the requested resumed session is unavailable.
+    fn session_missing_in_stderr(&self, _line: &str) -> bool {
+        false
+    }
     /// It honours [`ArgsCx::question`]: it can be held to reading only, using a fresh session
     /// or leaving a resumed session unchanged. Questions go only to adapters that say so.
     fn answers_questions(&self) -> bool {
@@ -753,6 +757,9 @@ impl AgentAdapter for Codex {
             v.extend(["-m".into(), m.clone()]);
         }
         v.extend(cx.options.args.iter().cloned());
+        if let Some(resume) = cx.resume {
+            v.extend(["resume".into(), resume.to_string()]);
+        }
         // The message itself goes in on stdin (see `stdin_text`).
         v.push("-".into());
         v
@@ -767,10 +774,25 @@ impl AgentAdapter for Codex {
         false
     }
 
+    fn resumes(&self) -> bool {
+        true
+    }
+
+    fn session_missing_in_stderr(&self, line: &str) -> bool {
+        codex_session_missing_text(line)
+    }
+
     fn parse(&self, p: &mut StreamParser, v: &Value) -> Vec<AgentEvent> {
         let mut out = Vec::new();
+        if p.session_missing {
+            return out;
+        }
         let t = v.get("type").and_then(Value::as_str).unwrap_or_default();
         if let Some(id) = v.get("thread_id").and_then(Value::as_str) {
+            if p.expected_session_id.as_deref().is_some_and(|expected| expected != id) {
+                p.session_missing = true;
+                return vec![codex_session_missing_event()];
+            }
             p.session_id = Some(id.to_string());
         }
         let item = v.get("item").cloned().unwrap_or(Value::Null);
@@ -808,11 +830,36 @@ impl AgentAdapter for Codex {
             }
             ("turn.failed", _) | ("error", _) => {
                 let m = v.pointer("/error/message").or_else(|| v.get("message")).and_then(Value::as_str).unwrap_or("unknown error");
+                if p.expected_session_id.is_some() && codex_session_missing(v, m) {
+                    p.session_missing = true;
+                    return vec![codex_session_missing_event()];
+                }
                 out.push(AgentEvent::Error { message: format!("Codex: {m}"), remediation: None, log: None });
             }
             _ => {}
         }
         out
+    }
+}
+
+fn codex_session_missing(v: &Value, message: &str) -> bool {
+    let code = v.pointer("/error/code").or_else(|| v.get("code")).and_then(Value::as_str);
+    if matches!(code, Some("thread_not_found" | "session_not_found")) {
+        return true;
+    }
+    codex_session_missing_text(message)
+}
+
+fn codex_session_missing_text(message: &str) -> bool {
+    let message = message.to_ascii_lowercase();
+    message.contains("thread") && (message.contains("not found") || message.contains("no rollout found") || message.contains("not loaded"))
+}
+
+pub(super) fn codex_session_missing_event() -> AgentEvent {
+    AgentEvent::Error {
+        message: "Codex couldn't find the saved conversation for this project.".into(),
+        remediation: Some("A new Codex session will start from the current project files and saved build brief.".into()),
+        log: None,
     }
 }
 
