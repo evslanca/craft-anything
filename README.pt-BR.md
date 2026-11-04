@@ -14,7 +14,7 @@
 <h1 align="center">Craft Anything</h1>
 
 <p align="center">
-  <b>Português (Brasil)</b> · <a href="README.md">English</a> · <a href="README.ja.md">日本語</a> · <a href="README.zh.md">简体中文</a> · <a href="README.ko.md">한국어</a>
+  <b>Português (Brasil)</b> · <a href="README.en.md">English</a> · <a href="README.ja.md">日本語</a> · <a href="README.zh.md">简体中文</a> · <a href="README.ko.md">한국어</a>
 </p>
 
 <p align="center">
@@ -27,11 +27,11 @@
   <img alt="100% Rust" src="https://img.shields.io/badge/100%25-Rust-b7410e?style=flat-square&logo=rust">
   <img alt="macOS · Windows · Linux · FreeBSD · Web" src="https://img.shields.io/badge/macOS%20%C2%B7%20Windows%20%C2%B7%20Linux%20%C2%B7%20FreeBSD%20%C2%B7%20Web-native-2d81ff?style=flat-square">
   <img alt="Licença: MIT ou Apache-2.0" src="https://img.shields.io/badge/license-MIT%20%2F%20Apache--2.0-3a3a3a?style=flat-square">
-  <img alt="Status: alfa inicial" src="https://img.shields.io/badge/status-early%20alpha-d69e2e?style=flat-square">
+  <img alt="Status: alfa inicial" src="https://img.shields.io/badge/status-alfa%20inicial-d69e2e?style=flat-square">
 </p>
 
 <p align="center">
-  <a href="https://discord.gg/artcraft"><img alt="Junte-se à comunidade ArtCraft no Discord" src="https://img.shields.io/badge/Join%20us%20on%20Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white" height="40"></a>
+  <a href="https://discord.gg/artcraft"><img alt="Junte-se à comunidade ArtCraft no Discord" src="https://img.shields.io/badge/Comunidade%20no%20Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white" height="40"></a>
 </p>
 
 <p align="center">
@@ -329,7 +329,7 @@ RISC-V (riscv64): `craft-anything-<ver>-linux-riscv64.tar.gz`, apenas um tarball
 <br>
 
 <p align="center">
-  <a href="https://discord.gg/artcraft"><img alt="Junte-se à comunidade ArtCraft no Discord" src="https://img.shields.io/badge/Join%20us%20on%20Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white" height="40"></a>
+  <a href="https://discord.gg/artcraft"><img alt="Junte-se à comunidade ArtCraft no Discord" src="https://img.shields.io/badge/Comunidade%20no%20Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white" height="40"></a>
 </p>
 
 <h3 align="center">Venha fazer coisas conosco</h3>
