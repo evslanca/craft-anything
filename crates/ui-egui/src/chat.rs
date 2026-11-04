@@ -423,7 +423,7 @@ fn item_ui(ui: &mut Ui, item: &ChatItem, beginner: bool, dense: bool, open: bool
                 egui::Frame::new().fill(t.raised).corner_radius(t.r_sm()).inner_margin(Margin::symmetric(10, 3)).show(ui, |ui| {
                     ui.horizontal(|ui| {
                         icons::show(ui, icon, 13.0, col);
-                        ui.label(RichText::new(tool.replace('_', " ")).font(theme::mono(12.5)).color(t.text_dim));
+                        ui.label(RichText::new(evidence_ui::nice_operation(tool)).font(theme::mono(12.5)).color(t.text_dim));
                     });
                 });
                 if !summary.is_empty() {
