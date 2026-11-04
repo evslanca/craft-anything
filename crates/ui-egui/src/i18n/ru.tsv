@@ -1442,5 +1442,10 @@ Close window	Закрыть окно
 Full screen	Полноэкранный режим
 Zoom	Изменить масштаб
 Bring all to front	Все окна — на передний план
+# English fallbacks for dynamically named native-operation labels.
+Native function callers list	Native function callers list
+Native function pseudocode	Native function pseudocode
+Native functions list	Native functions list
+Native strings browse	Native strings browse
 Drag to give the plan more or less room; double-click to reset	Перетащите, чтобы дать плану больше или меньше места; двойной щелчок возвращает как было
 Copy the message	Скопировать сообщение
