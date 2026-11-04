@@ -182,8 +182,8 @@ Auto mode	Modo automático
 Automatic	Automático
 Automatic ({name})	Automático ({name})
 Back	Voltar
-Best guess	Melhor palpite
-Best guess: a reasonable reading, but not proven.	Melhor palpite: uma leitura razoável, mas não comprovada.
+Best guess	Palpite
+Best guess: a reasonable reading, but not proven.	Palpite: uma leitura razoável, mas não comprovada.
 Binary layout	Layout binário
 Blocked	Bloqueado
 Bookmark	Marcador
@@ -197,7 +197,7 @@ Build with this	Criar com esta opção
 Build with {name}	Criar com {name}
 Build with {name} instead	Criar com {name} em vez da opção atual
 Build without it	Construa sem ele
-Builder's questions:	Perguntas do construtor:
+Builder's questions:	Perguntas:
 Building	Criando
 Building needs a coding agent on this computer (Claude Code, Codex or Gemini CLI: install one and sign in to it once in its own window), or an AI with an API key. Craft Anything never sees your account.	Para criar projetos, é preciso ter neste computador um agente de programação (Claude Code, Codex ou Gemini CLI, instalado e conectado uma vez em sua própria janela) ou uma IA com chave de API. O Craft Anything nunca acessa sua conta.
 Building needs a coding agent such as Claude Code, or an AI with an API key.	Para criar projetos, é necessário ter um agente de programação, como o Claude Code, ou uma IA com chave de API.
@@ -222,7 +222,7 @@ Change	Mudança
 Change a setting	Alterar uma configuração
 Change an AI's model	Alterar o modelo de uma IA
 Change how hard an AI thinks	Mude o quanto uma IA pensa
-Change it	Mude
+Change it	Alterar
 Change…	Mudar…
 Check	Verificar
 Check .NET native calls	Verifique as chamadas nativas do .NET
@@ -327,7 +327,7 @@ Custom	Personalizado
 Cutter command	Comando do Cutter
 DOS load image	Imagem de carregamento do DOS
 Databases	Bancos de dados
-Decide yourself	Decida você mesmo
+Decide yourself	Você decide
 Decode a radio recording	Decodifique uma gravação de rádio
 Decompile	Descompilar
 Decompile Java with Vineflower	Descompilar Java com Vineflower
@@ -383,7 +383,7 @@ Drop to open it	Solte para abri-lo
 Duplicate	Duplicar
 Duplicate a project	Duplicar um projeto
 Duplicate the project	Duplicar o projeto
-Each answer says how sure we are: Seen it, Worked it out or Best guess.	Cada resposta diz o quanto temos certeza: Vi, resolvi ou melhor palpite.
+Each answer says how sure we are: Seen it, Worked it out or Best guess.	Cada resposta indica o grau de certeza: observado, inferido ou hipótese.
 Edit a project file	Editar um arquivo de projeto
 Edit them in place	Edite-os no lugar
 Effort:	Esforço:
@@ -586,7 +586,7 @@ Jobs	Tarefas
 Jobs ({n_jobs})	Tarefas ({n_jobs})
 Jobs ({n})	Tarefas ({n})
 Just a question: nothing was changed. Answered by	Só uma pergunta: nada mudou. Respondido por
-Just ask	Basta perguntar
+Just ask	Só perguntar
 Just look inside	Basta olhar para dentro
 Work on my project	Trabalhar no meu projeto
 Work on a project you already have	Trabalhe em um projeto que você já possui
@@ -690,6 +690,10 @@ Match my pictures	Ajustar às minhas imagens
 Match static code to what ran	Combine o código estático com o que foi executado
 Maximise	Maximizar
 May I run "{title}"?	Posso executar "{title}"?
+Native function callers list	Chamadas à função
+Native function pseudocode	Pseudocódigo da função
+Native functions list	Lista de funções
+Native strings browse	Textos encontrados
 May I {action}?	Posso {action}?
 Measure which code ran	Meça qual código foi executado
 Medium	Médio
@@ -1000,7 +1004,7 @@ See what a game packs and save its pictures as PNG files. Only for games you mad
 See what a game packs, and save its pictures as PNG files.	Veja o que um jogo contém e salve suas imagens como arquivos PNG.
 See what a stand-in was asked	Veja o que um substituto foi solicitado
 See which servers an app talks to, and what it says.	Veja com quais servidores um aplicativo se comunica e o que ele diz.
-Seen it	Vi
+Seen it	Visto
 Seen it: read directly from the file, page or capture.	Visto: leia diretamente do arquivo, página ou captura.
 Selected	Selecionado
 Selection	Seleção
@@ -1272,8 +1276,8 @@ Without it, Deep mode uses Craft Anything's own decompiler, which is rougher.	Se
 Work out a copy's size	Calcule o tamanho de uma cópia
 Work out what an installed app is built on	Descubra em que um aplicativo instalado é construído
 Workbench	Bancada de trabalho
-Worked it out	Resolvi
-Worked it out: computed step by step from things we saw.	Resolvemos: calculado passo a passo a partir das coisas que vimos.
+Worked it out	Inferido
+Worked it out: computed step by step from things we saw.	Inferido: calculado passo a passo a partir do que foi observado.
 Worked through {n} steps	Concluiu {n} etapas
 Working on it	Trabalhando nisso
 Working on your answer	Trabalhando em sua resposta
@@ -1331,7 +1335,7 @@ must be a whole number	deve ser um número inteiro
 name, e.g. Studio box	nome, por ex. Caixa de estúdio
 number	número
 objdump output	saída objdump
-or start with /btw to just ask	ou comece com /btw para apenas perguntar
+or start with /btw to just ask	ou digite /btw
 pinned builds couldn't be read: {}	não foi possível ler compilações fixadas: {}
 say how to use the files there	diga como usar os arquivos aí
 scene	cena
